@@ -45,7 +45,8 @@ from writers import Embedding, write_embeddings  # noqa: E402
 
 def run_pca(adata, args):
     """GPU-only PCA. Pre/post: adata stays on GPU. Mutates in place."""
-    rsc.pp.scale(adata, zero_center=True, max_value=None)
+    """GPU-only centered PCA without per-gene variance scaling."""
+  
     rsc.pp.pca(
         adata,
         n_comps=args.n_components,
