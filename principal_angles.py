@@ -34,7 +34,7 @@ OUTPUT_DIR.mkdir(
 # SETTINGS
 # --------------------------------------------------
 
-SEEDS = range(1, 51)
+SEEDS = [20, 32]
 
 K_VALUES = [
     5,
@@ -162,12 +162,22 @@ for seed in SEEDS:
                 ),
             }
         )
-
-
+        
 results = pd.DataFrame(
     records
 )
 
+print(
+    results[
+        [
+            "seed",
+            "k",
+            "maximum_angle_degrees",
+            "mean_angle_degrees",
+            "median_angle_degrees",
+        ]
+    ].to_string(index=False)
+)
 
 # --------------------------------------------------
 # SAVE TABLES
@@ -205,7 +215,8 @@ summary = (
         ),
     )
     .reset_index()
-)
+)   
+    
 
 summary.to_csv(
     OUTPUT_DIR
@@ -213,7 +224,6 @@ summary.to_csv(
     sep="\t",
     index=False,
 )
-
 
 # --------------------------------------------------
 # PLOT
@@ -262,7 +272,7 @@ plt.ylabel(
 )
 
 plt.title(
-    "Principal-angle stability of Scanpy randomized PCA"
+    "Principal-angle stability of Rapids randomized PCA"
 )
 
 plt.xticks(
@@ -278,7 +288,7 @@ plt.tight_layout()
 
 plot_file = (
     OUTPUT_DIR
-    / "principal_angles_scanpy.png"
+    / "principal_angles_rapids.png"
 )
 
 plt.savefig(
@@ -329,3 +339,4 @@ print(
 print(
     plot_file
 )
+

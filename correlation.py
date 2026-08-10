@@ -40,7 +40,7 @@ OUTPUT_DIR.mkdir(
 # SETTINGS
 # --------------------------------------------------
 
-CORRELATION_THRESHOLD = 0.85
+CORRELATION_THRESHOLD = 0.8
 
 
 
@@ -280,7 +280,7 @@ plt.ylabel(
 )
 
 plt.title(
-    "Scanpy randomized PCA across 50 seeds"
+    "Rapids randomized PCA across 50 seeds"
 )
 
 plt.ylim(0, 1.02)
@@ -311,7 +311,7 @@ plt.close()
 
 
 # --------------------------------------------------
-# PLOT BREAKDOWN POINT BY SEED
+# PLOT BREAKDOWN POINT BY SEED — SORTED
 # --------------------------------------------------
 
 breakdown_plot_data = (
@@ -326,24 +326,42 @@ breakdown_plot_data[
     "breakdown_pc"
 ].astype(int)
 
+# Sort from earliest to latest breakdown
+breakdown_plot_data = (
+    breakdown_plot_data
+    .sort_values(
+        by="breakdown_pc",
+        ascending=True,
+    )
+    .reset_index(drop=True)
+)
+
 plt.figure(figsize=(12, 6))
 
+# x-axis is now ordered position, not seed number
+x_positions = np.arange(
+    len(breakdown_plot_data)
+)
+
 plt.bar(
-    breakdown_plot_data["seed"],
+    x_positions,
     breakdown_plot_data["breakdown_pc"],
 )
 
-plt.xlabel("Random seed")
+plt.xlabel("Seed, ordered by breakdown point")
 plt.ylabel(
     "First PC below correlation threshold"
 )
 
 plt.title(
-    "Randomized PCA breakdown point by seed"
+    "Randomized PCA breakdown points across 50 seeds"
 )
 
+# Show actual seed number under each bar
 plt.xticks(
-    breakdown_plot_data["seed"]
+    x_positions,
+    breakdown_plot_data["seed"],
+    rotation=90,
 )
 
 plt.ylim(
@@ -357,7 +375,7 @@ plt.tight_layout()
 
 breakdown_plot_file = (
     OUTPUT_DIR
-    / "breakdown_point_by_seed.png"
+    / "breakdown_point_sorted.png"
 )
 
 plt.savefig(
@@ -366,5 +384,13 @@ plt.savefig(
 )
 
 plt.close()
-print("\nSaved breakdown plot:")
+
+print("\nSaved sorted breakdown plot:")
 print(breakdown_plot_file)
+
+print("\nSORTED:")
+print(
+    breakdown_plot_data[
+        ["seed", "breakdown_pc"]
+    ].to_string(index=False)
+)
