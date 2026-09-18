@@ -31,6 +31,7 @@ Implementation notes
 import sys
 from pathlib import Path
 
+import cupy as cp
 import numpy as np
 import rapids_singlecell as rsc
 from obkit.logger import init_logger
@@ -45,23 +46,17 @@ from writers import Embedding, write_embeddings  # noqa: E402
 
 def run_pca(adata, args):
     """GPU randomized PCA without additional per-gene scaling."""
-    rsc.pp.pca(
-        adata,
-        n_comps=args.n_components,
-        zero_center=True,
-        svd_solver="randomized",
-        random_state=args.random_seed,
-        n_oversamples=10,
-        n_iter=2,
-        dtype="float64",
-        chunked=False,
-    )
-
+    if args.solver == "rapids-randomized":    
+        rsc.pp.pca(adata, n_comps=args.n_components, zero_center=True, svd_solver="randomized", random_state=args.random_seed, n_iter=args.n_iter, n_oversamples=args.n_oversamples,)
+    elif args.solver == "rapids-exact":
+        rsc.pp.pca(adata, n_comps=args.n_components, zero_center=True, svd_solver="covariance_eigh",)
+    else:
+        raise ValueError(f"Unknown solver: {args.solver}")
 
 def main():
     args = build_pca_parser().parse_args()
     print(f"Full command: {' '.join(sys.argv)}")
-    for k in ("output_dir", "name", "input_h5", "solver", "n_components", "random_seed"):
+    for k in ("output_dir", "name", "input_h5", "solver", "n_components", "random_seed", "n_iter", "n_oversamples",):
         print(f"  {k}: {getattr(args, k)}")
 
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
@@ -77,16 +72,25 @@ def main():
 
     with phase("gpu_upload"):
         rsc.get.anndata_to_GPU(adata)
-
+    
+    cp.cuda.runtime.deviceSynchronize()
     with phase("compute") as attrs:
         run_pca(adata, args)
+        cp.cuda.runtime.deviceSynchronize() 
+
         attrs["n_components"] = args.n_components
+        attrs["solver"] = args.solver
+        attrs["random_seed"] = args.random_seed
+
+        if args.solver == "rapids-randomized":
+            attrs["n_iter"] = args.n_iter
+            attrs["n_oversamples"] = args.n_oversamples
 
     with phase("gpu_download"):
         rsc.get.anndata_to_CPU(adata, convert_all=True)
 
     with phase("write") as attrs:
-        embedding = np.asarray(adata.obsm["X_pca"].get(), dtype=np.float64)
+        embedding = np.asarray(adata.obsm["X_pca"], dtype=np.float64)
         col_names = [f"PC{i + 1}" for i in range(embedding.shape[1])]
         out = Path(args.output_dir) / f"{args.name}_pcas.tsv"
         write_embeddings(Embedding(embedding, list(cell_ids), col_names), out)

@@ -19,10 +19,13 @@ cuML algorithms head-to-head later, extend ``choices=`` here with new
 tokens rather than exposing sub-knob flags.
 
 PCA solver tokens (cuML's ``svd_solver`` axis):
-    rapids               -> cuML default (auto), zero-centered
-    rapids-full          -> svd_solver="full"
-    rapids-jacobi        -> svd_solver="jacobi"
-    rapids-truncated     -> sparse truncated SVD path (zero_center=False)
+    PCA solver tokens:
+    rapids-randomized    -> randomized PCA
+    rapids-exact         -> deterministic exact/reference PCA
+
+Randomized PCA exposes:
+    --n_iter
+    --n_oversamples
 
 kNN flavor tokens (ANN search backend axis):
     rapids               -> rsc.pp.neighbors default (currently CAGRA)
@@ -68,13 +71,16 @@ def build_pca_parser():
                         help="TENx-format HDF5 of normalized, selected expression (genes x cells)")
 
     parser.add_argument("--solver", type=str, required=True,
-                        choices=["rapids"],
+                        choices=["rapids-randomized", "rapids-exact"],
                         help="PCA solver token (see module docstring for the rapids-* extension scheme)")
     parser.add_argument("--n_components", type=int, required=True,
                         help="Number of principal components to compute")
     parser.add_argument("--random_seed", type=int, required=True,
                         help="Seed for reproducibility")
-
+    parser.add_argument("--n_iter", type=int, required=True,
+                        help="Number of power iterations for randomized PCA")
+    parser.add_argument("--n_oversamples", type=int, required=True,
+                        help="Number of oversampled dimensions for randomized PCA")
     return parser
 
 
