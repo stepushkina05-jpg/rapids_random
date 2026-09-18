@@ -100,7 +100,7 @@ def main():
         print(f"  wrote: {out}")
 
     with phase("write_loadings") as attrs:
-        loadings = np.asarray(adata.varm["PCs"].get(), dtype=np.float64)
+        loadings = np.asarray(adata.varm["PCs"], dtype=np.float64)
         out_loadings = Path(args.output_dir) / f"{args.name}_loadings.tsv"
         loadings_df = pd.DataFrame(loadings, index=gene_ids, columns=col_names)
         loadings_df.index.name = "gene"
