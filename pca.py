@@ -33,6 +33,7 @@ from pathlib import Path
 
 import cupy as cp
 import numpy as np
+import pandas as pd
 import rapids_singlecell as rsc
 from obkit.logger import init_logger
 
@@ -97,6 +98,21 @@ def main():
         attrs["path"] = str(out)
         print(f"  embedding: {embedding.shape}")
         print(f"  wrote: {out}")
+
+    loadings = to_numpy(adata.varm["PCs"])
+
+        out_loadings = (Path(args.output_dir)/ f"{args.name}_loadings.tsv")
+
+        loadings_df = pd.DataFrame(loadings, index=gene_ids, columns=col_names,)
+        loadings_df.index.name = "gene"
+        loadings_df.to_csv(out_loadings, sep="\t",)
+
+        print(f"  loadings: {loadings.shape}")
+        print(f"  wrote: {out_loadings}")
+
+        attrs["path"] = str(out)
+        attrs["loadings_path"] = str(out_loadings)
+
 
 
 if __name__ == "__main__":
