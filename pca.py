@@ -98,16 +98,16 @@ def main():
         attrs["path"] = str(out)
         print(f"  embedding: {embedding.shape}")
         print(f"  wrote: {out}")
-        
+
     with phase("write_loadings") as attrs:
-    loadings = np.asarray(adata.varm["PCs"].get(), dtype=np.float64)
-    out_loadings = Path(args.output_dir) / f"{args.name}_loadings.tsv"
-    loadings_df = pd.DataFrame(loadings, index=gene_ids, columns=col_names)
-    loadings_df.index.name = "gene"
-    loadings_df.to_csv(out_loadings, sep="\t")
-    attrs["path"] = str(out_loadings)
-    print(f"  loadings: {loadings.shape}")
-    print(f"  wrote: {out_loadings}")
+        loadings = np.asarray(adata.varm["PCs"].get(), dtype=np.float64)
+        out_loadings = Path(args.output_dir) / f"{args.name}_loadings.tsv"
+        loadings_df = pd.DataFrame(loadings, index=gene_ids, columns=col_names)
+        loadings_df.index.name = "gene"
+        loadings_df.to_csv(out_loadings, sep="\t")
+        attrs["path"] = str(out_loadings)
+        print(f"  loadings: {loadings.shape}")
+        print(f"  wrote: {out_loadings}")
 
 if __name__ == "__main__":
     main()
