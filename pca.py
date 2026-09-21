@@ -92,7 +92,8 @@ def main():
         rsc.get.anndata_to_CPU(adata, convert_all=True)
 
     with phase("write") as attrs:
-        embedding = np.asarray(adata.obsm["X_pca"].get(), dtype=np.float64)
+        x_pca = adata.obsm["X_pca"]
+        embedding = cp.asnumpy(x_pca).astype(np.float64) if isinstance(x_pca, cp.ndarray) else np.asarray(x_pca, dtype=np.float64)
         col_names = [f"PC{i + 1}" for i in range(embedding.shape[1])]
         out = Path(args.output_dir) / f"{args.name}_pcas.tsv"
         write_embeddings(Embedding(embedding, list(cell_ids), col_names), out)
