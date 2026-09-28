@@ -68,7 +68,7 @@ def build_pca_parser():
 
     parser.add_argument("--normalized_selected.h5", dest="input_h5",
                         type=str, required=True,
-                        help="TENx-format HDF5 of normalized, selected expression (genes x cells)")
+                        help="Normalized, gene-selected matrix HDF5")
 
     parser.add_argument("--solver", type=str, required=True,
                         choices=["rapids-randomized", "rapids-exact"],
