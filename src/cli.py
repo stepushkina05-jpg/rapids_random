@@ -66,7 +66,7 @@ def build_pca_parser():
     parser = argparse.ArgumentParser(description="OmniBenchmark PCA module (rapids-singlecell)")
     add_common_args(parser)
 
-    parser.add_argument("--normalized_selected.h5", dest="input_h5",
+    parser.add_argument("--normalized_selected_h5", dest="input_h5",
                         type=str, required=True,
                         help="Normalized, gene-selected matrix HDF5")
 
