@@ -1,32 +1,17 @@
 #!/usr/bin/env python3
 """
-PCA module (rapids-singlecell-backed) for omnibenchmark.
+PCA module using RAPIDS-singlecell.
 
-Output
-------
-File: {output_dir}/{name}_pcas.tsv
+Solvers:
+    rapids-randomized: randomized SVD with configurable
+        n_iter (power iterations) and n_oversamples (sampling vectors).
+    rapids-exact: covariance matrix eigendecomposition.
 
-Tab-separated, with header row:
-  PC1  PC2  ...  PC{n_components}
-
-One row per cell, prefixed by cell barcode (so R's read.table(..., header=TRUE)
-auto-promotes column 1 to row.names). Values are float64.
-
-Implementation notes
---------------------
-- Genes are always centered/scaled before PCA (rsc.pp.scale, zero_center=True).
-  Mirrors the scanpy module's invariant. If alternative scaling is needed
-  later, expose it as a new --pca_type variant rather than as an independent
-  flag (see src/cli.py for the rapids-* solver-token convention).
-- ``--solver`` is a single opaque token ``rapids`` here. cuML's internal
-  svd_solver knob (auto/full/jacobi) is left at its default. To compare
-  cuML algorithms head-to-head, add new solver tokens (rapids-jacobi,
-  rapids-full, rapids-truncated) in src/cli.py — do not expose svd_solver
-  as a free-form flag.
-- RMM is reinitialized with a non-managed, non-pooled allocator. This makes
-  GPU memory accounting predictable for benchmark runs (a pool allocator
-  would mask the true working-set cost).
+PCA internally centers features without unit-variance scaling.
+Both PC scores and gene loadings are exported as TSV files.
+GPU synchronization is used around PCA computation for timing.
 """
+
 
 import sys
 from pathlib import Path
